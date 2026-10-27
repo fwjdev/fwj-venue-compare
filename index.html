@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>会場比較（料金・予約方法・必要人数）</title>
+<style>
+ :root{ --blue:#2b6cb0; --blue-d:#1a4e8a; --line:#d7dee8; --bg:#f3f6fb; }
+ *{box-sizing:border-box}
+ body{font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",system-ui,sans-serif;color:#1a1f29;margin:0;background:#fff;line-height:1.55;}
+ header{background:linear-gradient(135deg,#2b6cb0,#1a4e8a);color:#fff;padding:18px 20px;}
+ header h1{margin:0;font-size:19px}
+ header .asof{opacity:.85;font-size:12px;margin-top:4px}
+ nav{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);padding:8px 16px;display:flex;gap:8px;flex-wrap:wrap}
+ nav a{font-size:13px;text-decoration:none;color:var(--blue-d);border:1px solid var(--line);padding:5px 11px;border-radius:999px;background:#fff}
+ nav a:hover{background:var(--bg)}
+ main{padding:16px;max-width:1500px;margin:0 auto}
+ section{margin-bottom:34px}
+ h2{font-size:16px;border-left:5px solid var(--blue);padding-left:9px;margin:10px 0}
+ .hint{font-size:12px;color:#5b6472;margin:-2px 0 10px}
+ .tablewrap{overflow:auto;max-height:78vh;border:1px solid var(--line);border-radius:8px}
+ table{border-collapse:collapse;width:100%;font-size:13px;min-width:720px}
+ th,td{border-bottom:1px solid var(--line);padding:8px 10px;vertical-align:top;text-align:left}
+ thead th{position:sticky;top:0;background:var(--blue);color:#fff;font-size:12px;cursor:pointer;white-space:nowrap;box-shadow:0 1px 0 var(--blue-d)}
+ thead th.nosort{cursor:default}
+ thead th .ar{opacity:.5;font-size:10px;margin-left:3px}
+ tbody tr:nth-child(even){background:var(--bg)}
+ tbody tr:hover{background:#e7f0fb}
+ td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+ td.total{font-weight:700;color:var(--blue-d);background:#eaf2fb}
+ .sub{color:#7a8391;font-size:11px}
+ .chip{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;font-weight:700}
+ .c-need{background:#fde8e8;color:#b02a2a}
+ .c-part{background:#fff3da;color:#8a5a00}
+ .c-no{background:#e4f5e6;color:#1f7a34}
+ a.src{color:var(--blue);text-decoration:none;font-size:12px;word-break:break-all}
+ a.src:hover{text-decoration:underline}
+ .staff{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:6px}
+ .card{border:1px solid var(--line);border-radius:10px;padding:13px 15px}
+ .card.big{border:2px solid var(--blue);background:#eef5fd}
+ .card h3{margin:0 0 6px;font-size:14px}
+ .card .n{font-size:30px;font-weight:800;color:var(--blue-d);line-height:1}
+ .card .n small{font-size:13px;font-weight:700;color:#5b6472}
+ .card ul{margin:8px 0 0;padding-left:18px;font-size:12.5px}
+ .warn{background:#fff7e6;border:1px solid #ffe0a3;border-radius:10px;padding:12px 15px;font-size:12.5px;color:#7a4a00;margin-top:12px}
+ .warn b{color:#8a3a00}
+ .controls{margin:8px 0;font-size:13px}
+ .controls input{padding:6px 10px;border:1px solid var(--line);border-radius:7px;font-size:13px;width:min(320px,80vw)}
+ footer{color:#6b7280;font-size:11px;padding:16px;border-top:1px solid var(--line);margin-top:20px}
+ @media(max-width:600px){header h1{font-size:16px}}
+</style></head>
+<body>
+<header>
+ <h1>会場比較 — 座席数・利用料金・予約方法・11/1必要人数</h1>
+ <div class="asof" id="asof"></div>
+</header>
+<nav>
+ <a href="#fee-big">① 料金（大/単一ホール）</a>
+ <a href="#fee-small">② 料金（小ホール）</a>
+ <a href="#resv">③ 予約・申込方法</a>
+ <a href="#staff">④ 11/1必要人数</a>
+</nav>
+<main>
+ <section id="fee-big">
+  <h2>① 料金比較：大ホール・単一ホール</h2>
+  <div class="hint">列見出しをクリックで並べ替え。合計＝施設使用料（最高・土日祝）＋舞台設備/業者10万＋付帯設備10万（後2者は一律仮定）。</div>
+  <div class="tablewrap"><table id="t-big"></table></div>
+ </section>
+ <section id="fee-small">
+  <h2>② 料金比較：小ホール</h2>
+  <div class="tablewrap"><table id="t-small"></table></div>
+ </section>
+ <section id="resv">
+  <h2>③ 予約・申込方法（施設別）</h2>
+  <div class="controls">絞り込み：<input id="q" placeholder="施設名・キーワードで検索"></div>
+  <div class="hint">「11/1現地」= 11月1日に申込へ行く場合に現地要員が要るか（<span class="chip c-need">必要</span>＝来館必須／<span class="chip c-part">一部</span>＝抽選申込は遠隔可・本申請は窓口／<span class="chip c-no">不要</span>＝電話/郵送/オンライン）。</div>
+  <div class="tablewrap"><table id="t-resv"></table></div>
+ </section>
+ <section id="staff">
+  <h2>④ 11月1日に一斉申込する場合の必要人数（試算）</h2>
+  <p class="hint" id="staff-lead"></p>
+  <div class="staff" id="staff-cards"></div>
+  <div class="warn" id="staff-warn"></div>
+ </section>
+</main>
+<footer id="foot"></footer>
+<script>
+const D = {"fee": [{"name": "市川市文化会館", "hall": "大ホール", "type": "big", "seat": 1758, "seatnote": "1階1190+2階568、可動26", "cond": "市外・入場料3,000円超", "fee": 689970, "total": 889970, "url": "https://www.tekona.net/bunkakaikan/rental/fee/"}, {"name": "越谷サンシティホール（新越谷）", "hall": "大ホール", "type": "big", "seat": 1675, "seatnote": "車椅子8席含む", "cond": "市外(5市1町外)・本番・入場料7,001円以上", "fee": 500000, "total": 700000, "url": "https://suncityhall.jp/hall1"}, {"name": "江戸川区総合文化センター", "hall": "大ホール", "type": "big", "seat": 1497, "seatnote": "OP使用時1,325", "cond": "入場料3,001円以上で2倍（区内外同一）", "fee": 684500, "total": 884500, "url": "https://edogawa-bunkacenter.jp/"}, {"name": "三郷市文化会館（全館借り切り）", "hall": "全館（大+小+諸室）", "type": "big", "seat": 1292, "seatnote": "大1,292＋小390／楽屋・リハ・練習・会議・展示等 全室込", "cond": "全館借り切り・市外・入場料5,000円以上（基本315,600円×2.70）", "fee": 852120, "total": 1052120, "url": "https://www1.g-reiki.net/misato/reiki_honbun/z600RG00000454.html"}, {"name": "和光市サンアゼリア", "hall": "大ホール", "type": "big", "seat": 1286, "seatnote": "1階842+2階438、OP時1,122", "cond": "市外・全客席・入場料5,000円以上", "fee": 558130, "total": 758130, "url": "https://www.sunazalea.or.jp/charge/"}, {"name": "サンパール荒川（荒川区民会館）", "hall": "大ホール", "type": "big", "seat": 975, "seatnote": "固定853、最大975", "cond": "入場料5,001円以上で+30%（区内外同一）", "fee": 338000, "total": 538000, "url": "https://www.sunpearl-arakawa.com/guide/price/"}, {"name": "八王子いちょうホール", "hall": "大ホール", "type": "big", "seat": 800, "seatnote": "ワンスロープ、車椅子2含む", "cond": "入場料4,001円以上で2倍（市内外同一）", "fee": 384600, "total": 584600, "url": "https://www.hachiojibunka.or.jp/icho/ryoukin/"}, {"name": "行徳文化ホールI&I（あいあい）", "hall": "ホール（単一）", "type": "big", "seat": 637, "seatnote": "", "cond": "市外・入場料3,000円超", "fee": 275840, "total": 475840, "url": "https://www.tekona.net/gyotoku/rental/fee"}, {"name": "曳舟文化センター（墨田区）", "hall": "ホール（劇場・単一）", "type": "big", "seat": 582, "seatnote": "可動30席は車椅子12台分に変更可", "cond": "入場料3,000円超で+70%（区内外同一）", "fee": 202980, "total": 402980, "url": "https://www.hikifune-bunka.jp/guide/price/"}, {"name": "IMAホール（光が丘IMA／練馬）", "hall": "ホール（単一）", "type": "big", "seat": 501, "seatnote": "消防法上501席が上限", "cond": "土日祝のみ（入場料・市外の割増は制度上なし／民間運営）", "fee": 371800, "total": 571800, "url": "https://www.ima-hikarigaoka.jp/imahall/pdf/regulation.pdf"}, {"name": "江戸川区総合文化センター", "hall": "小ホール", "type": "small", "seat": 502, "seatnote": "", "cond": "入場料3,001円以上で2倍（区内外同一）", "fee": 205340, "total": 405340, "url": "https://edogawa-bunkacenter.jp/"}, {"name": "越谷サンシティホール（新越谷）", "hall": "小ホール", "type": "small", "seat": 490, "seatnote": "車椅子6席分含む", "cond": "市外(5市1町外)・本番・入場料7,001円以上", "fee": 150000, "total": 350000, "url": "https://suncityhall.jp/hall2"}, {"name": "市川市文化会館", "hall": "小ホール", "type": "small", "seat": 413, "seatnote": "", "cond": "市外・入場料3,000円超", "fee": 161430, "total": 361430, "url": "https://www.tekona.net/bunkakaikan/rental/fee/"}, {"name": "三郷市文化会館", "hall": "小ホール", "type": "small", "seat": 390, "seatnote": "車椅子2別", "cond": "市外・入場料5,000円以上（×2.70）", "fee": 139320, "total": 339320, "url": "https://www1.g-reiki.net/misato/reiki_honbun/z600RG00000454.html"}, {"name": "サンパール荒川（荒川区民会館）", "hall": "小ホール", "type": "small", "seat": 300, "seatnote": "可動、最大300", "cond": "入場料5,001円以上で+30%（区内外同一）", "fee": 84630, "total": 284630, "url": "https://www.sunpearl-arakawa.com/guide/price/"}, {"name": "八王子いちょうホール", "hall": "小ホール", "type": "small", "seat": 282, "seatnote": "プロセニアム形式時", "cond": "入場料4,001円以上で2倍（市内外同一）", "fee": 149800, "total": 349800, "url": "https://www.hachiojibunka.or.jp/icho/ryoukin/"}, {"name": "和光市サンアゼリア", "hall": "小ホール", "type": "small", "seat": 229, "seatnote": "可動、最大300", "cond": "市外・入場料5,000円以上", "fee": 126860, "total": 326860, "url": "https://www.sunazalea.or.jp/charge/"}], "resv": [{"name": "江戸川区総合文化センター", "method": "オンライン抽選＋先着（区予約システム「えどねっと」）", "onsite": "不要", "onsite_d": "登録済なら抽選・申込ともオンライン／初回の団体登録は窓口必須", "timing": "抽選=利用月の12か月前の月の5〜14日申込・15日発表。先着=25日〜", "reg": "えどねっと団体登録が必須（窓口・本人確認、郵送/代理不可）。所要日数=公式記載なし", "tel": "03-3652-1111", "mail": "edogawa.shisetsu@sps.sgn.ne.jp", "form": "えどねっと団体登録申請書 edonet_dantai.pdf", "form_url": "https://edogawa-bunkacenter.jp/common/pdf/edonet_dantai.pdf", "cat": "D", "src": "https://edogawa-bunkacenter.jp/rental/"}, {"name": "曳舟文化センター（墨田区）", "method": "現地抽選会（劇場ホール。当日直接来場・事前申込不要）＋電話仮予約", "onsite": "必要", "onsite_d": "劇場ホールは抽選会に来場。本申込・支払も現地", "timing": "抽選会=毎月最初の平日9:00〜（受付8:30-9:00）。受付=利用日の1年前の月の最初の開館日〜5日前", "reg": "墨田区公共施設利用システム登録が必須（オンライン審査 最大14日）", "tel": "03-3616-3951", "mail": "（公式に記載なし／要問合せ）", "form": "（公式サイトに掲載なし／1階受付へ要問合せ）", "form_url": "", "cat": "B", "src": "https://www.hikifune-bunka.jp/guide/lottery/"}, {"name": "越谷サンシティホール（新越谷）", "method": "抽選（大12か月前）＋窓口先着。仮予約は電話・ネット可、本申請は窓口必須", "onsite": "一部", "onsite_d": "抽選申込は電話/ネット可（当日現地不要）／当選後の本申請は窓口必須", "timing": "大ホール抽選=利用日12か月前の月の1〜10日。当選本申請=12〜18日に窓口", "reg": "ネット申込は「まんまるよやく」登録（窓口・口座確認）。所要日数=公式記載なし", "tel": "048-985-1111", "mail": "（公式に記載なし／要問合せ）", "form": "（DL様式なし・利用者登録申請書は窓口受取）", "form_url": "", "cat": "C", "src": "https://suncityhall.jp/info-facility"}, {"name": "市川市文化会館", "method": "オンライン自動抽選＋先着（財団予約システム P-kashikan）", "onsite": "不要", "onsite_d": "登録済なら申込はオンライン＋メールで完結／初回の使用者登録は窓口必須", "timing": "抽選=利用日13か月前（市内のみ・自動抽選）。先着=市内12/市外11か月前の月初〜30日前", "reg": "使用者登録が必須（窓口）。所要日数=公式記載なし", "tel": "047-379-5111", "mail": "yoyaku@ichikawa-bunka.or.jp", "form": "市川市文化施設使用者登録等申請書（PDF/Excel）", "form_url": "https://www.tekona.net/bunkakaikan/rental/documents/", "cat": "D", "src": "https://www.tekona.net/bunkakaikan/rental/"}, {"name": "三郷市文化会館（全館借り切り）", "method": "抽選（大12か月前）＋窓口先着。まんまるよやく/電話仮予約。本申込は窓口支払", "onsite": "一部", "onsite_d": "抽選申込はまんまる/電話可／本申込（支払）は窓口必須。初回登録も窓口", "timing": "大ホール=12か月前の月の1〜10日申込・11日抽選・12〜18日当選本申請・19日〜先着", "reg": "まんまるよやく登録が必須（窓口・口座確認、即日有効）", "tel": "048-957-2511", "mail": "（公式に記載なし／要問合せ）", "form": "抽選申込依頼書（ホール用）PDF ほか", "form_url": "https://www.misato-hall.com/1088.htm", "cat": "C", "src": "https://www.misato-hall.com/1088.htm"}, {"name": "八王子いちょうホール", "method": "抽選（大12か月前・毎月初日に来館抽選、電話/ネット不可）＋先着（ネット仮押さえ可）", "onsite": "必要", "onsite_d": "大ホール抽選は毎月初日9:00-10:00に来館必須／先着はネット仮押さえ可だが確定は電話/窓口", "timing": "大ホール抽選=利用日12か月前・毎月初日9:00受付→10:00抽選（市内のみ）。市外は翌日先着", "reg": "予約システム（p-kashikan系・2025/10新）登録が必須（メール必須）。所要日数=公式記載なし", "tel": "042-621-3001", "mail": "geikan77@hachiojibunka.or.jp", "form": "施設利用者登録申込書 043.pdf／ホール利用計画表 042", "form_url": "https://www.hachiojibunka.or.jp/icho/file/", "cat": "A", "src": "https://www.hachiojibunka.or.jp/icho/moushikomi/"}, {"name": "行徳文化ホールI&I（あいあい）", "method": "オンライン自動抽選＋先着（財団予約システム P-kashikan）", "onsite": "不要", "onsite_d": "登録済なら空き確認〜申込〜支払までオンライン完結／初回の使用者登録は窓口必須", "timing": "抽選エントリー=毎月5〜25日・自動抽選は毎月1日11:00。先着=市内12/市外11か月前の月初〜30日前", "reg": "使用者登録が必須（窓口のみ・郵送/ネット不可）。所要日数=公式記載なし", "tel": "047-701-3011", "mail": "yoyaku-gyotoku@ichikawa-bunka.or.jp", "form": "使用者登録申請書／行事の内容 gyotoku_event_details", "form_url": "https://www.tekona.net/gyotoku/rental/documents/", "cat": "D", "src": "https://www.tekona.net/gyotoku/rental/"}, {"name": "IMAホール（光が丘IMA／練馬）", "method": "電話＋郵送（審査/抽選制・先着ではない）。オンライン予約なし（空き確認のみWeb）", "onsite": "不要", "onsite_d": "申込は電話・郵送・メールで完結。来館は当日のみ", "timing": "長期優先=2年前〜電話／先行抽選=13か月前の27日〜翌3日・郵送／一般=11か月前の月初平日〜電話", "reg": "事前の利用者登録なし（企画書・過去資料による審査制）", "tel": "03-3976-2000", "mail": "（固定受付メールなし・通知は施設発信／要問合せ）", "form": "使用申込書 moushikomi.pdf／予約希望表（先行抽選用）", "form_url": "https://www.ima-hikarigaoka.jp/imahall/rental/", "cat": "D", "src": "https://www.ima-hikarigaoka.jp/imahall/"}, {"name": "和光市サンアゼリア", "method": "窓口のみ（抽選＋先着）。オンライン申込は不可（空き照会のみ）", "onsite": "必要", "onsite_d": "窓口来館。受付初日に重複時は来館して抽選9:00-9:30", "timing": "大・小ホール=利用月13か月前（市外12か月前）〜7日前。受付初日9:30までに来館で重複時抽選", "reg": "ホール申込の利用者登録=公式記載なし（要問合せ）", "tel": "048-468-7771", "mail": "（記載なし）", "form": "（DL様式なし・窓口で記入）", "form_url": "", "cat": "A", "src": "https://www.sunazalea.or.jp/shiori/"}, {"name": "サンパール荒川（荒川区民会館）", "method": "窓口（抽選→本申請、仮予約は電話可）。ホールはオンライン不可（集会室のみ可）", "onsite": "必要", "onsite_d": "大・小ホールは抽選に来館＝毎月1日9:00／本申請も来館", "timing": "ホール抽選=毎月1日9:00〜（受付8:30-9:00、区内対象）。受付=区内12/区外11か月前の月初〜5日前", "reg": "ホール窓口申込の登録要否=公式明記なし（オンライン＝集会室は登録必須）", "tel": "03-3806-6531", "mail": "（記載なし）", "form": "（DL様式なし・窓口で提出）", "form_url": "", "cat": "A", "src": "https://www.sunpearl-arakawa.com/guide/subscribe/"}], "A": ["八王子いちょうホール", "和光市サンアゼリア", "サンパール荒川（荒川区民会館）"], "B": ["曳舟文化センター（墨田区）"], "C": ["越谷サンシティホール（新越谷）", "三郷市文化会館（全館借り切り）"], "D": ["江戸川区総合文化センター", "市川市文化会館", "行徳文化ホールI&I（あいあい）", "IMAホール（光が丘IMA／練馬）"], "stage": 100000, "facil": 100000, "asof": "2026年10月27日時点（各施設公式サイトの一次情報）"};
+const yen = n => n==null? "" : n.toLocaleString("ja-JP")+"円";
+const esc = s => (s==null?"":String(s)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+document.getElementById("asof").textContent = D.asof;
+
+// ---- 料金テーブル ----
+function feeTable(elId, type){
+ const rows = D.fee.filter(r=>r.type===type);
+ const cols = [
+  {k:"name",label:"施設（ホール）",r:false,render:r=>`<b>${esc(r.name)}</b><div class="sub">${esc(r.hall)}</div>`},
+  {k:"seat",label:"座席数",r:true,render:r=>`${r.seat.toLocaleString()}席`+(r.seatnote?`<div class="sub">${esc(r.seatnote)}</div>`:"")},
+  {k:"cond",label:"最高料金の条件",r:false,render:r=>`<span class="sub">${esc(r.cond)}</span>`},
+  {k:"fee",label:"施設使用料",r:true,render:r=>`<span class="num">${yen(r.fee)}</span>`,cls:"num"},
+  {k:"stage",label:"舞台/業者",r:false,render:_=>`<span class="num">${yen(D.stage)}</span>`,cls:"num"},
+  {k:"facil",label:"付帯設備",r:false,render:_=>`<span class="num">${yen(D.facil)}</span>`,cls:"num"},
+  {k:"total",label:"合計",r:true,render:r=>`<span class="num">${yen(r.total)}</span>`,cls:"num total"},
+  {k:"url",label:"出典",r:false,render:r=>`<a class="src" href="${r.url}" target="_blank" rel="noopener">公式↗</a>`},
+ ];
+ const el=document.getElementById(elId);
+ let sortK="seat", sortAsc=false;
+ function draw(){
+  const rs=[...rows].sort((a,b)=>{let x=a[sortK],y=b[sortK];
+    if(sortK==="stage")x=y=0; if(sortK==="facil")x=y=0;
+    if(typeof x==="number"&&typeof y==="number")return sortAsc?x-y:y-x;
+    return sortAsc?String(x).localeCompare(y,"ja"):String(y).localeCompare(x,"ja");});
+  el.innerHTML="<thead><tr>"+cols.map(c=>{
+    const ar=c.r?(sortK===c.k?(sortAsc?"▲":"▼"):"↕"):"";
+    return `<th data-k="${c.k}" class="${c.r?"":"nosort"}">${c.label}${c.r?`<span class="ar">${ar}</span>`:""}</th>`;
+  }).join("")+"</tr></thead><tbody>"+
+   rs.map(r=>"<tr>"+cols.map(c=>`<td class="${c.cls||""}">${c.render(r)}</td>`).join("")+"</tr>").join("")+"</tbody>";
+  el.querySelectorAll("th[data-k]").forEach(th=>{const c=cols.find(x=>x.k===th.dataset.k);if(!c||!c.r)return;
+    th.onclick=()=>{if(sortK===c.k)sortAsc=!sortAsc;else{sortK=c.k;sortAsc=false;}draw();};});
+ }
+ draw();
+}
+feeTable("t-big","big"); feeTable("t-small","small");
+
+// ---- 予約テーブル ----
+const catChip = c => c==="必要"?'<span class="chip c-need">必要</span>':c==="一部"?'<span class="chip c-part">一部</span>':'<span class="chip c-no">不要</span>';
+function resvTable(){
+ const el=document.getElementById("t-resv");
+ const q=(document.getElementById("q").value||"").trim();
+ const rows=D.resv.filter(v=>!q || (v.name+v.method+v.timing+v.reg).includes(q));
+ el.innerHTML="<thead><tr>"+
+  ["施設","申込方式","11/1現地","受付時期・抽選日","事前登録（所要日数）","連絡先","申込様式"].map(h=>`<th class="nosort">${h}</th>`).join("")+
+  "</tr></thead><tbody>"+rows.map(v=>`<tr>
+   <td><b>${esc(v.name)}</b></td>
+   <td>${esc(v.method)}</td>
+   <td>${catChip(v.onsite)}<div class="sub">${esc(v.onsite_d)}</div></td>
+   <td><span class="sub">${esc(v.timing)}</span></td>
+   <td><span class="sub">${esc(v.reg)}</span></td>
+   <td>${esc(v.tel)}<div class="sub">${esc(v.mail)}</div><a class="src" href="${v.src}" target="_blank" rel="noopener">公式↗</a></td>
+   <td>${v.form_url?`<a class="src" href="${v.form_url}" target="_blank" rel="noopener">${esc(v.form)} ↗</a>`:`<span class="sub">${esc(v.form)}</span>`}</td>
+  </tr>`).join("")+"</tbody>";
+}
+resvTable();
+document.getElementById("q").addEventListener("input",resvTable);
+
+// ---- 必要人数 ----
+document.getElementById("staff-lead").innerHTML =
+ `結論：<b>11/1 当日の午前に「現地で同時に」人が要るのは ${D.A.length} 会場＝最低 ${D.A.length} 名</b>（抽選が毎月1日/初日の朝に来館必須）。曳舟は抽選会が平日のため別日に＋1名、越谷・三郷は後日窓口に順次で可、残りは電話/郵送/オンラインで現地不要。`;
+document.getElementById("staff-cards").innerHTML = `
+ <div class="card big"><h3>A. 11/1朝に現地同時</h3><div class="n">${D.A.length}<small> 名同時</small></div>
+   <div class="sub">毎月1日/初日に来館抽選</div><ul>${D.A.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+ <div class="card"><h3>B. 別日に現地</h3><div class="n">+${D.B.length}<small> 名（別日）</small></div>
+   <div class="sub">抽選会が平日</div><ul>${D.B.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+ <div class="card"><h3>C. 後日窓口に本申請</h3><div class="n">1<small> 名で順次可</small></div>
+   <div class="sub">抽選申込は電話/ネット可</div><ul>${D.C.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+ <div class="card"><h3>D. 現地不要</h3><div class="n">1<small> 名で順次可</small></div>
+   <div class="sub">電話/郵送/オンライン</div><ul>${D.D.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+document.getElementById("staff-warn").innerHTML =
+ `⚠️ <b>重要な前提</b>：2026年11月1日は<b>日曜日</b>。A群（和光・荒川・八王子）の「毎月1日/初日 来館抽選」が日曜に実施・開館されるかは要確認（公立館は休日休館や抽選日の翌開館日ずれの可能性大）。実施日が平日にずれる場合はB群と同様に別日対応となり同時人数は変動。`+
+ `また D/C群でも未登録なら<b>11/1より前に初回の利用者登録（多くは窓口来館・本人確認）</b>が必要（江戸川・市川・行徳・越谷・三郷・八王子）。`+
+ `さらに各会場は<b>受付開始が「利用月の○か月前」とバラバラ</b>で、同じ11/1に全会場へ有効に申し込めるとは限りません。上の人数は「現地での物理的拘束」の観点の試算です。`;
+
+document.getElementById("foot").innerHTML =
+ "出典：各施設公式（江戸川 edogawa-bunkacenter.jp／曳舟 hikifune-bunka.jp・墨田区／越谷 suncityhall.jp・まんまるよやく／市川・行徳 tekona.net／三郷 misato-hall.com・三郷市例規／八王子 hachiojibunka.or.jp／IMAホール ima-hikarigaoka.jp／和光 sunazalea.or.jp／荒川 sunpearl-arakawa.com）。「所要日数」等が公式に無い項目は要問合せ。料金は各施設の最高条件（市外・有料・入場料最高区分）の土日祝全日。";
+</script>
+</body></html>
